@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Define the directory where log files will be saved -->
+    <property name="LOG_DIR" value="logs" />
+    
+    <!-- Define the log file name -->
+    <property name="LOG_FILE_NAME" value="cms-application" />
+
+    <!-- Console Appender: Outputs logs to VS Code terminal with colors and formatting -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- Enable color output in the console -->
+        <withJansi>true</withJansi>
+        
+        <!-- Define how the log message should be formatted -->
+        <encoder>
+            <!-- Pattern: timestamp [level] logger - message -->
+            <!-- %d{HH:mm:ss.SSS} = timestamp in hours:minutes:seconds.milliseconds format -->
+            <!-- %5p = log level (INFO, WARN, ERROR, etc.) padded to 5 characters -->
+            <!-- %logger{36} = logger name, shortened to 36 characters for readability -->
+            <!-- %msg%n = the actual log message followed by newline -->
+            <pattern>%d{HH:mm:ss.SSS} [%5p] %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Rolling File Appender: Saves logs to a file and rotates it daily -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Specify the log file location and name -->
+        <file>${LOG_DIR}/${LOG_FILE_NAME}.log</file>
+        
+        <!-- Define how the log message should be formatted in the file -->
+        <encoder>
+            <!-- Pattern: timestamp [level] logger - message -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%5p] %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+
+        <!-- Rolling Policy: Automatically rotate log files based on size and time -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- File naming pattern when a log file is rotated -->
+            <!-- Example: cms-application-2026-05-30.0.log (first rotation of the day) -->
+            <!-- Example: cms-application-2026-05-30.1.log (second rotation if file size exceeded) -->
+            <fileNamePattern>${LOG_DIR}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            
+            <!-- Maximum size of each log file before it's rotated: 10MB -->
+            <!-- When a log file reaches 10MB, it will be archived and a new one created -->
+            <maxFileSize>10MB</maxFileSize>
+            
+            <!-- Maximum number of days to keep log files: 30 days -->
+            <!-- Log files older than 30 days will be automatically deleted -->
+            <maxHistory>30</maxHistory>
+            
+            <!-- Maximum total size of all log files: 300MB (10MB per file × 30 days) -->
+            <!-- When total size exceeds this, oldest files will be deleted -->
+            <totalSizeCap>300MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Logger Configuration for com.cms package -->
+    <!-- Set INFO level for our application logs (shows INFO, WARN, ERROR) -->
+    <!-- This means DEBUG messages from com.cms won't be shown -->
+    <logger name="com.cms" level="INFO" />
+
+    <!-- Logger Configuration for Spring Framework -->
+    <!-- Set WARN level to reduce verbose Spring logs (only shows WARN, ERROR) -->
+    <logger name="org.springframework" level="WARN" />
+
+    <!-- Logger Configuration for Hibernate -->
+    <!-- Set WARN level to reduce database verbose logs -->
+    <logger name="org.hibernate" level="WARN" />
+
+    <!-- Root Logger: Catches all logs not handled by specific loggers above -->
+    <!-- Set default level to WARN for third-party libraries -->
+    <!-- This ensures only important messages are logged -->
+    <root level="WARN">
+        <!-- Attach the CONSOLE appender to show logs in VS Code terminal -->
+        <appender-ref ref="CONSOLE" />
+        
+        <!-- Attach the FILE appender to save logs to the log file -->
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>
