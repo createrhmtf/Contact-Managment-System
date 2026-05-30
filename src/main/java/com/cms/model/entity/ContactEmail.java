@@ -1,29 +1,30 @@
 package com.cms.model.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Entity
-@Table(name = "contact_emails")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "contact_emails")
 public class ContactEmail {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Email
+    @Column(nullable = false)
     private String email;
 
-    private String label;  // e.g. "work", "personal"
+    private String label;
 
-    @ManyToOne
-    @JoinColumn(name = "contact_id")
+    private Boolean isPrimary;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contact_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Contact contact;
 }

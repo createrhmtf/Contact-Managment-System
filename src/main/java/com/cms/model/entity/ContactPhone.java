@@ -1,26 +1,30 @@
 package com.cms.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Entity
-@Table(name = "contact_phones")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "contact_phones")
 public class ContactPhone {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String phone;
-    private String label;  // e.g. "mobile", "home"
 
-    @ManyToOne
-    @JoinColumn(name = "contact_id")
+    private String label;
+
+    private Boolean isPrimary;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contact_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Contact contact;
 }
