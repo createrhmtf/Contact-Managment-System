@@ -3,6 +3,7 @@ package com.cms.controller;
 import com.cms.exception.GlobalExceptionHandler;
 import com.cms.model.dto.AuthResponse;
 import com.cms.model.dto.ChangePasswordRequest;
+import com.cms.model.dto.ForgotPasswordRequest;
 import com.cms.model.dto.LoginRequest;
 import com.cms.model.dto.RegisterRequest;
 import com.cms.security.JwtFilter;
@@ -117,6 +118,46 @@ class AuthControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.token").value("jwt-token"));
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/auth/forgot-password")
+    class ForgotPasswordEndpoint {
+
+        @Test
+        @DisplayName("TC-FORGOT-01: returns 200 when recovery details match")
+        void forgotPassword_returnsOk() throws Exception {
+            ForgotPasswordRequest request = new ForgotPasswordRequest(
+                    TestConstants.USER_EMAIL,
+                    TestConstants.USER_PHONE,
+                    TestConstants.NEW_PASSWORD);
+
+            doNothing().when(authService).resetForgottenPassword(
+                    eq(TestConstants.USER_EMAIL),
+                    eq(TestConstants.USER_PHONE),
+                    eq(TestConstants.NEW_PASSWORD));
+
+            mockMvc.perform(post("/api/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$").value("Password reset successfully"));
+
+            verify(authService).resetForgottenPassword(
+                    TestConstants.USER_EMAIL,
+                    TestConstants.USER_PHONE,
+                    TestConstants.NEW_PASSWORD);
+        }
+
+        @Test
+        @DisplayName("TC-FORGOT-02: returns 400 when validation fails")
+        void forgotPassword_withInvalidBody_returnsBadRequest() throws Exception {
+            mockMvc.perform(post("/api/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errors").isArray());
         }
     }
 

@@ -205,4 +205,45 @@ class AuthServiceImplTest {
             verify(userRepository, never()).save(any());
         }
     }
+
+    @Nested
+    @DisplayName("resetForgottenPassword()")
+    class ResetForgottenPassword {
+
+        @Test
+        @DisplayName("TC-FORGOT-01: should update password when email and phone match")
+        void resetForgottenPassword_withMatchingRecoveryDetails_updatesHash() {
+            User user = TestDataFactory.persistedUser(TestConstants.USER_EMAIL, "old-hash");
+            user.setPhoneNumber(TestConstants.USER_PHONE);
+
+            when(userRepository.findByEmail(TestConstants.USER_EMAIL)).thenReturn(Optional.of(user));
+            when(passwordEncoder.encode(TestConstants.NEW_PASSWORD)).thenReturn("new-hash");
+
+            authService.resetForgottenPassword(
+                    TestConstants.USER_EMAIL,
+                    TestConstants.USER_PHONE,
+                    TestConstants.NEW_PASSWORD);
+
+            assertThat(user.getPasswordHash()).isEqualTo("new-hash");
+            verify(userRepository).save(user);
+        }
+
+        @Test
+        @DisplayName("TC-FORGOT-02: should throw when phone number does not match")
+        void resetForgottenPassword_withWrongPhone_throwsIllegalArgumentException() {
+            User user = TestDataFactory.persistedUser(TestConstants.USER_EMAIL, "old-hash");
+            user.setPhoneNumber(TestConstants.USER_PHONE);
+
+            when(userRepository.findByEmail(TestConstants.USER_EMAIL)).thenReturn(Optional.of(user));
+
+            assertThatThrownBy(() -> authService.resetForgottenPassword(
+                            TestConstants.USER_EMAIL,
+                            "+1 555 9999",
+                            TestConstants.NEW_PASSWORD))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Email and phone number do not match");
+
+            verify(userRepository, never()).save(any());
+        }
+    }
 }

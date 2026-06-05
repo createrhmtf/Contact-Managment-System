@@ -2,6 +2,7 @@ package com.cms.controller;
 
 import com.cms.model.dto.AuthResponse;
 import com.cms.model.dto.ChangePasswordRequest;
+import com.cms.model.dto.ForgotPasswordRequest;
 import com.cms.model.dto.LoginRequest;
 import com.cms.model.dto.RegisterRequest;
 import com.cms.service.AuthService;
@@ -35,6 +36,13 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         log.info("Login attempt for: {}", request.getEmailOrPhone());
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("Forgot password reset attempt for: {}", request.getEmail());
+        authService.resetForgottenPassword(request.getEmail(), request.getPhoneNumber(), request.getNewPassword());
+        return ResponseEntity.ok("Password reset successfully");
     }
 
     @PutMapping("/change-password")

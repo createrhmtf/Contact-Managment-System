@@ -87,6 +87,28 @@ public class AuthServiceImpl implements AuthService {
         log.info("Password changed for: {}", email);
     }
 
+    @Override
+    @Transactional
+    public void resetForgottenPassword(String email, String phoneNumber, String newPassword) {
+        String normalizedEmail = email.trim();
+        String normalizedPhone = phoneNumber.trim();
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getPhoneNumber() == null || user.getPhoneNumber().isBlank()) {
+            throw new IllegalArgumentException("Password reset requires a registered phone number");
+        }
+
+        if (!user.getPhoneNumber().equals(normalizedPhone)) {
+            throw new IllegalArgumentException("Email and phone number do not match");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Forgotten password reset for: {}", normalizedEmail);
+    }
+
     private User resolveUser(String emailOrPhone) {
         String identifier = emailOrPhone.trim();
 

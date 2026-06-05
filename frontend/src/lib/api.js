@@ -51,6 +51,7 @@ function queryString(params) {
 export const api = {
   login: (body) => request('/api/auth/login', { method: 'POST', body }),
   register: (body) => request('/api/auth/register', { method: 'POST', body }),
+  forgotPassword: (body) => request('/api/auth/forgot-password', { method: 'POST', body }),
   changePassword: (token, body) => request('/api/auth/change-password', { method: 'PUT', token, body }),
   contacts: (token, page = 0, size = 8) =>
     request(`/api/contacts?${queryString({ page, size })}`, { token }),

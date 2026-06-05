@@ -2,6 +2,7 @@ package com.cms.integration;
 
 import com.cms.model.dto.AuthResponse;
 import com.cms.model.dto.ChangePasswordRequest;
+import com.cms.model.dto.ForgotPasswordRequest;
 import com.cms.model.dto.LoginRequest;
 import com.cms.model.dto.RegisterRequest;
 import com.cms.repository.UserRepository;
@@ -197,6 +198,62 @@ class AuthApiIntegrationTest extends AbstractIntegrationTest {
                             .content(objectMapper.writeValueAsString(loginRequest)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("User not found"));
+        }
+    }
+
+    @Nested
+    @DisplayName("Forgot password flow")
+    class ForgotPasswordFlow {
+
+        @Test
+        @DisplayName("TC-FORGOT-01: user can reset password with registered email and phone")
+        void forgotPassword_withMatchingRecoveryDetails_resetsPassword() throws Exception {
+            RegisterRequest registerRequest = TestDataFactory.registerRequest(
+                    "forgot.reset@test.com",
+                    "03002223344");
+            AuthTestHelper.registerAndObtainToken(mockMvc, objectMapper, registerRequest);
+
+            ForgotPasswordRequest resetRequest = new ForgotPasswordRequest(
+                    "forgot.reset@test.com",
+                    "03002223344",
+                    TestConstants.NEW_PASSWORD);
+
+            mockMvc.perform(post("/api/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(resetRequest)))
+                    .andExpect(status().isOk());
+
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new LoginRequest("forgot.reset@test.com", TestConstants.VALID_PASSWORD))))
+                    .andExpect(status().isBadRequest());
+
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new LoginRequest("forgot.reset@test.com", TestConstants.NEW_PASSWORD))))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("TC-FORGOT-02: wrong recovery phone returns 400")
+        void forgotPassword_withWrongPhone_returnsBadRequest() throws Exception {
+            RegisterRequest registerRequest = TestDataFactory.registerRequest(
+                    "forgot.wrong.phone@test.com",
+                    "03003334455");
+            AuthTestHelper.registerAndObtainToken(mockMvc, objectMapper, registerRequest);
+
+            ForgotPasswordRequest resetRequest = new ForgotPasswordRequest(
+                    "forgot.wrong.phone@test.com",
+                    "03009990000",
+                    TestConstants.NEW_PASSWORD);
+
+            mockMvc.perform(post("/api/auth/forgot-password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(resetRequest)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("Email and phone number do not match"));
         }
     }
 
