@@ -35,6 +35,7 @@ public class ContactController {
     public ResponseEntity<Page<ContactDTO>> getAllContacts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+                size = Math.min(size, 50);
         String userEmail = getCurrentUserEmail();
         log.info("Get all contacts for: {}", userEmail);
         return ResponseEntity.ok(contactService.getAllContacts(userEmail, page, size));

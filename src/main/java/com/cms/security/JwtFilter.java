@@ -48,16 +48,20 @@ public class JwtFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                 if (jwtUtil.validateToken(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException ignored) {
+        }
+
+        catch (JwtException | IllegalArgumentException e) {
+            logger.warn("Invalid JWT token rejected: {}", e.getMessage());
+        } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+            logger.warn("JWT user not found: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);

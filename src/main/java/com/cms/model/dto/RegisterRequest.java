@@ -2,6 +2,7 @@ package com.cms.model.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +22,9 @@ public class RegisterRequest {
     @Email(message = "Email must be valid")
     private String email;
 
+    @Pattern(regexp = "^[+\\d\\s\\-().]{7,20}$", message = "Phone number format is invalid")
     private String phoneNumber;
+
 
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")

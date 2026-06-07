@@ -1,5 +1,6 @@
 package com.cms.controller;
 
+import jakarta.validation.Valid;
 import com.cms.exception.ResourceNotFoundException;
 import com.cms.model.dto.UserDTO;
 import com.cms.model.entity.User;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -47,7 +49,7 @@ public class UserController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UserDTO> updateMyProfile(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateMyProfile(@Valid @RequestBody  UserDTO userDTO) {
         String userEmail = getCurrentUserEmail();
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userEmail));

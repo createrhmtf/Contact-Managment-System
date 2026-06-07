@@ -11,13 +11,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ContactRepository extends JpaRepository<Contact, Long> {
 
-    Page<Contact> findByUserId(Long userId, Pageable pageable);
+        Page<Contact> findByUserId(Long userId, Pageable pageable);
 
-    @Query("SELECT c FROM Contact c WHERE c.user.id = :userId AND " +
-            "(LOWER(c.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    Page<Contact> searchContactsByKeyword(
-            @Param("userId") Long userId,
-            @Param("keyword") String keyword,
-            Pageable pageable);
+        @Query("SELECT DISTINCT c FROM Contact c LEFT JOIN c.emails e WHERE c.user.id = :userId AND " +
+                        "(LOWER(c.firstName) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(c.lastName) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(c.title) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(e.email) LIKE LOWER(CONCAT('%',:k,'%')))")
+        Page<Contact> searchContacts(
+                        @Param("userId") Long userId,
+                        @Param("k") String keyword,
+                        Pageable pageable);
 }
