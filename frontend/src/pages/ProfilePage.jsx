@@ -1,6 +1,6 @@
-import { KeyRound, LogOut, Pencil, ShieldCheck } from 'lucide-react'
+import { KeyRound, LogOut, Pencil } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { api } from '../lib/api'
 import { initials } from '../lib/format'
@@ -8,7 +8,9 @@ import { initials } from '../lib/format'
 export function ProfilePage() {
   const { token, logout, updateSession } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const currentPasswordRef = useRef(null)
+  const securityRef = useRef(null)
   const [profile, setProfile] = useState(null)
   const [form, setForm] = useState({ firstName: '', lastName: '' })
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
@@ -27,6 +29,14 @@ export function ProfilePage() {
       .catch((requestError) => setStatus({ type: 'error', message: requestError.message }))
       .finally(() => setLoading(false))
   }, [token])
+
+  useEffect(() => {
+    if (!loading && location.pathname.startsWith('/settings')) {
+      setTimeout(() => {
+        securityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  }, [loading, location.pathname])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -120,7 +130,7 @@ export function ProfilePage() {
         </section>
 
         <div className="profile-main-column">
-          <section className="profile-card profile-card--security">
+          <section className="profile-card profile-card--security" ref={securityRef}>
             <div className="card-heading">
               <div>
                 <h3>Security</h3>
@@ -153,31 +163,6 @@ export function ProfilePage() {
             </form>
           </section>
 
-          <section className="profile-card">
-            <div className="card-heading">
-              <div>
-                <h3>Account Settings</h3>
-                <p>Manage your notification preferences.</p>
-              </div>
-              <ShieldCheck size={20} />
-            </div>
-            <div className="settings-list">
-              <label className="settings-row">
-                <span>
-                  <strong>Email Notifications</strong>
-                  <small>Receive updates on application status and messages.</small>
-                </span>
-                <input type="checkbox" defaultChecked />
-              </label>
-              <label className="settings-row">
-                <span>
-                  <strong>SMS Alerts</strong>
-                  <small>Get text messages for urgent interview requests.</small>
-                </span>
-                <input type="checkbox" />
-              </label>
-            </div>
-          </section>
 
           <section className="profile-card profile-card--session">
             <div className="card-heading">

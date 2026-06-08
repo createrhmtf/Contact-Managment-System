@@ -120,11 +120,11 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ContactDTO> getAllContacts(String userEmail, int page, int size) {
+    public Page<ContactDTO> getAllContacts(String userEmail, int page, int size, int cappedSize) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userEmail));
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("firstName").ascending());
+        Pageable pageable = PageRequest.of(page, cappedSize, Sort.by("firstName").ascending());
         Page<Contact> contacts = contactRepository.findByUserId(user.getId(), pageable);
         return contacts.map(contactMapper::toDTO);
     }
@@ -136,7 +136,7 @@ public class ContactServiceImpl implements ContactService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userEmail));
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Contact> results = contactRepository.searchContactsByKeyword(
+        Page<Contact> results = contactRepository.searchContacts(
                 user.getId(), keyword, pageable);
         return results.map(contactMapper::toDTO);
     }

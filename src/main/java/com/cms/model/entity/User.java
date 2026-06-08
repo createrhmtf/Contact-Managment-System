@@ -11,7 +11,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+    @UniqueConstraint(name = "ux_users_email", columnNames = "email"),
+    @UniqueConstraint(name = "ux_users_phone_number", columnNames = "phone_number")
+})
 public class User {
 
     @Id

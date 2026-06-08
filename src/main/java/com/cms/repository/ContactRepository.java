@@ -13,11 +13,18 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
 
         Page<Contact> findByUserId(Long userId, Pageable pageable);
 
-        @Query("SELECT DISTINCT c FROM Contact c LEFT JOIN c.emails e WHERE c.user.id = :userId AND " +
+        @Query(value = "SELECT DISTINCT c FROM Contact c LEFT JOIN c.emails e LEFT JOIN c.phones p WHERE c.user.id = :userId AND " +
                         "(LOWER(c.firstName) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
                         "LOWER(c.lastName) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
                         "LOWER(c.title) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
-                        "LOWER(e.email) LIKE LOWER(CONCAT('%',:k,'%')))")
+                        "LOWER(e.email) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(p.phone) LIKE LOWER(CONCAT('%',:k,'%')))",
+                countQuery = "SELECT COUNT(DISTINCT c) FROM Contact c LEFT JOIN c.emails e LEFT JOIN c.phones p WHERE c.user.id = :userId AND " +
+                        "(LOWER(c.firstName) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(c.lastName) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(c.title) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(e.email) LIKE LOWER(CONCAT('%',:k,'%')) OR " +
+                        "LOWER(p.phone) LIKE LOWER(CONCAT('%',:k,'%')))")
         Page<Contact> searchContacts(
                         @Param("userId") Long userId,
                         @Param("k") String keyword,

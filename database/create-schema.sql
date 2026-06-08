@@ -132,8 +132,8 @@ BEGIN
         last_name NVARCHAR(255) NULL,
         title NVARCHAR(255) NULL,
         company NVARCHAR(255) NULL,
-        address NVARCHAR(255) NULL,
-        notes NVARCHAR(255) NULL,
+        address NVARCHAR(MAX) NULL,
+        notes NVARCHAR(MAX) NULL,
         created_at DATETIME2(6) NULL,
         updated_at DATETIME2(6) NULL,
         CONSTRAINT pk_contacts PRIMARY KEY (id),
@@ -152,6 +152,29 @@ IF NOT EXISTS (
 )
 BEGIN
     CREATE INDEX ix_contacts_user_id ON dbo.contacts (user_id);
+END;
+GO
+
+-- QA-004: Expand address and notes columns to NVARCHAR(MAX) if still NVARCHAR(255)
+IF EXISTS (
+    SELECT 1 FROM sys.columns
+    WHERE object_id = OBJECT_ID(N'dbo.contacts')
+      AND name = N'address'
+      AND max_length = 510
+)
+BEGIN
+    ALTER TABLE dbo.contacts ALTER COLUMN address NVARCHAR(MAX) NULL;
+END;
+GO
+
+IF EXISTS (
+    SELECT 1 FROM sys.columns
+    WHERE object_id = OBJECT_ID(N'dbo.contacts')
+      AND name = N'notes'
+      AND max_length = 510
+)
+BEGIN
+    ALTER TABLE dbo.contacts ALTER COLUMN notes NVARCHAR(MAX) NULL;
 END;
 GO
 

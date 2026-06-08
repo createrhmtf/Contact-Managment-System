@@ -34,8 +34,12 @@ public class Contact {
     
     private String company;
     
+    @Lob
+    @Column(name = "address")
     private String address;
     
+    @Lob
+    @Column(name = "notes")
     private String notes;
 
     @Column(name = "created_at", updatable = false)

@@ -1,21 +1,12 @@
-import { AlertTriangle, Download, FileText, Plus, TrendingUp, UserPlus, UsersRound } from 'lucide-react'
+import { AlertTriangle, FileText, Plus, UserPlus, UsersRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { api } from '../lib/api'
 import { displayName, initials, primaryValue } from '../lib/format'
 
-const chartBars = [
-  { label: 'Jan', value: 28 },
-  { label: 'Feb', value: 42 },
-  { label: 'Mar', value: 36 },
-  { label: 'Apr', value: 55 },
-  { label: 'May', value: 78 },
-  { label: 'Jun', value: 92 },
-]
-
 export function DashboardPage() {
-  const { session, token } = useAuth()
+  const { token } = useAuth()
   const [contacts, setContacts] = useState([])
   const [totalContacts, setTotalContacts] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -35,6 +26,14 @@ export function DashboardPage() {
     contacts.filter((contact) => !primaryValue(contact.emails, 'email') || !primaryValue(contact.phones, 'phone')).length
   ), [contacts])
 
+  // UI-002: Real 30-day filter using createdAt timestamp
+  const recentCount = useMemo(() => (
+    contacts.filter((c) => {
+      if (!c.createdAt) return false
+      return (Date.now() - new Date(c.createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000
+    }).length
+  ), [contacts])
+
   const recentContacts = contacts.slice(0, 3)
 
   return (
@@ -52,7 +51,6 @@ export function DashboardPage() {
         <article className="metric-card">
           <div className="metric-card-top">
             <span className="metric-icon metric-icon--blue"><UsersRound size={22} /></span>
-            <span className="trend-badge"><TrendingUp size={14} /> 12%</span>
           </div>
           <p>Total Contacts</p>
           <strong>{loading ? '...' : totalContacts.toLocaleString()}</strong>
@@ -61,10 +59,9 @@ export function DashboardPage() {
         <article className="metric-card">
           <div className="metric-card-top">
             <span className="metric-icon"><UserPlus size={22} /></span>
-            <span className="trend-badge"><TrendingUp size={14} /> 5%</span>
           </div>
           <p>Recently Added (30d)</p>
-          <strong>{loading ? '...' : recentContacts.length}</strong>
+          <strong>{loading ? '...' : recentCount}</strong>
         </article>
 
         <article className="metric-card">
@@ -78,22 +75,22 @@ export function DashboardPage() {
 
         <article className="activity-card">
           <div className="section-title-row">
-            <h3>Recent Activity</h3>
-            <Link to="/contacts">View Full Log</Link>
+            <h3>Recently Added</h3>
+            <Link to="/contacts">View All</Link>
           </div>
           {recentContacts.length === 0 && !loading ? (
-            <div className="state-panel">No recent contact activity yet.</div>
+            <div className="state-panel">No contacts yet. Add your first one!</div>
           ) : (
             <div className="activity-list">
               {(recentContacts.length ? recentContacts : [null, null, null]).map((contact, index) => (
                 <div className="activity-item" key={contact?.id ?? index}>
                   <span className="avatar">{contact ? initials(contact.firstName, contact.lastName) : <FileText size={17} />}</span>
                   <p>
-                    <strong>{contact ? displayName(contact) : ['John Doe', 'Sarah Connor', 'Alice Smith'][index]}</strong>
-                    <span>{index === 0 ? 'updated contact details' : index === 1 ? 'created a new contact profile' : 'added a note'}</span>
-                    <small>{index === 0 ? '2 hours ago' : index === 1 ? '5 hours ago' : 'Yesterday'}</small>
+                    <strong>{contact ? displayName(contact) : '...'}</strong>
+                    <span>{contact ? (primaryValue(contact.emails, 'email') || 'No email') : ''}</span>
+                    <small>{contact?.createdAt ? new Date(contact.createdAt).toLocaleDateString() : ''}</small>
                   </p>
-                  <em>{index === 0 ? 'Update' : index === 1 ? 'Creation' : 'Note'}</em>
+                  <em>{contact?.company || contact?.title || ''}</em>
                 </div>
               ))}
             </div>

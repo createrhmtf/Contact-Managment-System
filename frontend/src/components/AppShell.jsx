@@ -1,5 +1,5 @@
 import { Bell, CircleHelp, ContactRound, Grid2x2, LogOut, Menu, Search, Settings, UserRound, X } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { initials } from '../lib/format'
@@ -12,9 +12,23 @@ const navItems = [
 
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const notificationRef = useRef(null)
   const { session, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -23,7 +37,7 @@ export function AppShell() {
 
   const title = location.pathname.startsWith('/contacts')
     ? 'CMS'
-    : location.pathname.startsWith('/profile')
+    : location.pathname.startsWith('/profile') || location.pathname.startsWith('/settings')
       ? 'CMS'
       : 'Dashboard'
 
@@ -65,11 +79,19 @@ export function AppShell() {
         </nav>
 
         <div className="sidebar-footer">
-          <NavLink to="/profile" onClick={() => setMenuOpen(false)} className={({ isActive }) => `sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}>
+          <NavLink
+            to="/profile"
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) => `sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
+          >
             <UserRound size={18} />
             <span>Profile</span>
           </NavLink>
-          <NavLink to="/profile" onClick={() => setMenuOpen(false)} className="sidebar-link">
+          <NavLink
+            to="/settings"
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) => `sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
+          >
             <Settings size={18} />
             <span>Settings</span>
           </NavLink>
@@ -95,20 +117,59 @@ export function AppShell() {
             <input type="search" placeholder="Search across portal..." aria-label="Search across portal" />
           </form>
           <div className="topbar-actions">
-            <button className="icon-button icon-button--flat notification-button" type="button" aria-label="Notifications">
-              <Bell size={19} />
-              <span />
-            </button>
+            <div className="notification-wrapper" ref={notificationRef}>
+              <button
+                className="icon-button icon-button--flat notification-button"
+                type="button"
+                aria-label="Notifications"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+              >
+                <Bell size={19} />
+                <span />
+              </button>
+              {notificationsOpen && (
+                <div className="notification-dropdown">
+                  <div className="notification-dropdown-header">
+                    <h3>Notifications</h3>
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={() => setNotificationsOpen(false)}
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="notification-dropdown-content">
+                    <div className="notification-item">
+                      <div className="notification-item-dot" />
+                      <div className="notification-item-text">
+                        <strong>Welcome to CMS</strong>
+                        <p>Your contact database is ready and connected successfully.</p>
+                        <small>Just now</small>
+                      </div>
+                    </div>
+                    <div className="notification-item">
+                      <div className="notification-item-dot" />
+                      <div className="notification-item-text">
+                        <strong>Security Update</strong>
+                        <p>Database connection has been secured with credentials.</p>
+                        <small>10 mins ago</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <button className="icon-button icon-button--flat" type="button" aria-label="Help">
               <CircleHelp size={19} />
             </button>
-            <div className="topbar-user">
+            <Link to="/profile" className="topbar-user">
               <span className="avatar avatar--small">{initials(session?.firstName, session?.lastName)}</span>
               <span>
                 <strong>{session?.firstName || 'CMS user'}</strong>
                 <small>{session?.email || 'Signed in'}</small>
               </span>
-            </div>
+            </Link>
           </div>
         </header>
         <Outlet />

@@ -11,6 +11,7 @@ spring:
       ddl-auto: create-drop
     open-in-view: false
     show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
 
 jwt:
   secret: TestJwtSecretKeyForUnitAndIntegrationTests123456!!

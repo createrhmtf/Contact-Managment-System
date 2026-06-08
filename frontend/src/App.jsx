@@ -20,6 +20,7 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/contacts" element={<ContactsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/settings" element={<ProfilePage />} />
             </Route>
           </Route>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

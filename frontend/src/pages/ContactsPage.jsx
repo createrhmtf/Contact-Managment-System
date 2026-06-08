@@ -1,4 +1,4 @@
-import { ArrowUpDown, ChevronLeft, ChevronRight, Mail, Phone, Plus, Search, Tags, UserPlus, UsersRound } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Mail, Phone, Plus, Search, UserPlus, UsersRound } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
@@ -120,11 +120,6 @@ export function ContactsPage() {
             <input value={searchInput} onChange={handleSearchInput} placeholder="Search by name, email, or title..." aria-label="Search contacts" />
             {keyword && <button type="button" onClick={clearSearch}>Clear</button>}
           </form>
-          <div className="filter-group">
-            <span>Filter by:</span>
-            <button className="button button--outline" type="button"><Tags size={17} /> Label</button>
-            <button className="button button--outline" type="button"><ArrowUpDown size={17} /> Sort</button>
-          </div>
         </div>
 
         {error && <div className="form-alert">{error}</div>}
@@ -150,7 +145,6 @@ export function ContactsPage() {
                 <table className="contacts-table">
                   <thead>
                     <tr>
-                      <th><input type="checkbox" aria-label="Select all contacts" /></th>
                       <th>Name &amp; Title</th>
                       <th>Contact Info</th>
                       <th>Labels</th>
@@ -168,7 +162,6 @@ export function ContactsPage() {
                           className={contact.id === selectedContact?.id ? 'table-row--selected' : ''}
                           onClick={() => setSelectedContact(contact)}
                         >
-                          <td><input type="checkbox" aria-label="Select contact" onClick={(event) => event.stopPropagation()} /></td>
                           <td>
                             <div className="contact-cell">
                               <span className="avatar">{initials(contact.firstName, contact.lastName)}</span>

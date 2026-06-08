@@ -1,10 +1,8 @@
 package com.cms.controller;
 
 import jakarta.validation.Valid;
-import com.cms.exception.ResourceNotFoundException;
 import com.cms.model.dto.UserDTO;
-import com.cms.model.entity.User;
-import com.cms.repository.UserRepository;
+import com.cms.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,41 +20,19 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     private String getCurrentUserEmail() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
-    private UserDTO mapToUserDTO(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .createdAt(user.getCreatedAt())
-                .build();
-    }
-
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getMyProfile() {
-        String userEmail = getCurrentUserEmail();
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userEmail));
-        log.info("Profile fetched for: {}", userEmail);
-        return ResponseEntity.ok(mapToUserDTO(user));
+        return ResponseEntity.ok(userService.getProfile(getCurrentUserEmail()));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UserDTO> updateMyProfile(@Valid @RequestBody  UserDTO userDTO) {
-        String userEmail = getCurrentUserEmail();
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userEmail));
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        User savedUser = userRepository.save(user);
-        log.info("Profile updated for: {}", userEmail);
-        return ResponseEntity.ok(mapToUserDTO(savedUser));
+    public ResponseEntity<UserDTO> updateMyProfile(@Valid @RequestBody UserDTO userDTO) {
+        return ResponseEntity.ok(userService.updateProfile(getCurrentUserEmail(), userDTO));
     }
 }

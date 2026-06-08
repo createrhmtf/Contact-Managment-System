@@ -35,6 +35,12 @@ async function request(path, options = {}) {
       : await response.text()
 
   if (!response.ok) {
+    // Handle token expiry — redirect to login
+    if (response.status === 401) {
+      localStorage.removeItem('nexa-session')
+      window.location.href = '/login'
+      return
+    }
     const message = typeof data === 'object' && data?.message
       ? data.message
       : 'Something went wrong. Please try again.'
