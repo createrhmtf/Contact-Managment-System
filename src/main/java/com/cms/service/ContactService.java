@@ -13,7 +13,7 @@ public interface ContactService {
 
     ContactDTO getContactById(Long id, String userEmail);
 
-    Page<ContactDTO> getAllContacts(String userEmail, int page, int size);
+    Page<ContactDTO> getAllContacts(String userEmail, int page, int size, int size2);
 
     Page<ContactDTO> searchContacts(String userEmail, String keyword, int page, int size);
 }

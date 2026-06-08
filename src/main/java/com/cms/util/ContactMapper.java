@@ -7,7 +7,6 @@ import com.cms.model.entity.ContactPhone;
 import com.cms.model.entity.User;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +66,6 @@ public class ContactMapper {
                 .address(dto.getAddress())
                 .notes(dto.getNotes())
                 .user(user)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         List<ContactEmail> emailEntities = new ArrayList<>();

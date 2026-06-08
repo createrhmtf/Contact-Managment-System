@@ -32,13 +32,14 @@ public class ContactController {
     }
 
     @GetMapping
+
     public ResponseEntity<Page<ContactDTO>> getAllContacts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-                size = Math.min(size, 50);
         String userEmail = getCurrentUserEmail();
+        int cappedSize = Math.min(size, 100); // never load more than 100 at once
         log.info("Get all contacts for: {}", userEmail);
-        return ResponseEntity.ok(contactService.getAllContacts(userEmail, page, size));
+        return ResponseEntity.ok(contactService.getAllContacts(userEmail, page, size, cappedSize));
     }
 
     @GetMapping("/search")

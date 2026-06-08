@@ -13,10 +13,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
+import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -58,10 +59,11 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
+        
         catch (JwtException | IllegalArgumentException e) {
-            logger.warn("Invalid JWT token rejected: {}", e.getMessage());
-        } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
-            logger.warn("JWT user not found: {}", e.getMessage());
+            log.warn("Invalid JWT token rejected: {}", e.getMessage());
+        } catch (UsernameNotFoundException e) {
+            log.warn("JWT references unknown user: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
